@@ -147,6 +147,38 @@ func (s *Service) GetVertexDependencies(label string, all bool) SubGraph {
 	return sub
 }
 
+func (s *Service) GetVertexDependants(label string, all bool) SubGraph {
+	res := s.graph.GetVertexDependants(label, all)
+
+	sub := SubGraph{
+		Title: "Dependencias de " + label,
+		All:   res.All,
+		Principal: Vertex{
+			Label: res.Principal.Label(),
+			Class: s.graph.GetVertexClass(res.Principal),
+		},
+		Edges:    []Edge{},
+		Vertices: []Vertex{},
+	}
+
+	for _, v := range res.Vertices {
+		sub.Vertices = append(sub.Vertices, Vertex{
+			Label: v.Label(),
+			Class: s.graph.GetVertexClass(v),
+		})
+	}
+
+	for _, e := range res.Edges {
+		sub.Edges = append(sub.Edges, Edge{
+			Label:       e.Label(),
+			Class:       s.graph.GetEdgeClass(e),
+			Source:      s.graph.EdgeSourceLabel(e),
+			Destination: s.graph.EdgeDestinationLabel(e),
+		})
+	}
+	return sub
+}
+
 func (s *Service) Neighbors(label string) SubGraph {
 
 	principal := s.graph.GetVertexByLabel(label)
@@ -182,5 +214,35 @@ func (s *Service) Neighbors(label string) SubGraph {
 		})
 	}
 
+	return sub
+}
+
+func (s *Service) Path(label, destination string) SubGraph {
+	res := s.graph.Path(label, destination)
+
+	sub := SubGraph{
+		Title: "Caminho de " + label + " para " + destination,
+		Principal: Vertex{
+			Label: res.Principal.Label(),
+			Class: s.graph.GetVertexClass(res.Principal),
+		},
+		Edges:    []Edge{},
+		Vertices: []Vertex{},
+	}
+
+	for _, v := range res.Vertices {
+		sub.Vertices = append(sub.Vertices, Vertex{
+			Label: v.Label(),
+			Class: s.graph.GetVertexClass(v),
+		})
+	}
+	for _, e := range res.Edges {
+		sub.Edges = append(sub.Edges, Edge{
+			Label:       e.Label(),
+			Class:       s.graph.GetEdgeClass(e),
+			Source:      s.graph.EdgeSourceLabel(e),
+			Destination: s.graph.EdgeDestinationLabel(e),
+		})
+	}
 	return sub
 }

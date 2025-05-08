@@ -7,7 +7,7 @@ import (
 	"github.com/opsminded/service"
 )
 
-var simpleEx = &TestableExtractor{
+var simpleEx = &service.TestableExtractor{
 	FrequencyDuration: time.Second,
 	Edges: []service.Edge{
 		{

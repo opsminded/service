@@ -1,17 +1,15 @@
-package service_test
+package service
 
 import (
 	"sync"
 	"time"
-
-	"github.com/opsminded/service"
 )
 
 type TestableExtractor struct {
 	FrequencyDuration time.Duration
 
-	Edges    []service.Edge
-	Vertices []service.Vertex
+	Edges    []Edge
+	Vertices []Vertex
 
 	edgePointer   int
 	vertexPointer int
@@ -19,13 +17,13 @@ type TestableExtractor struct {
 	mu sync.Mutex
 }
 
-var _ service.Extractor = (*TestableExtractor)(nil)
+var _ Extractor = (*TestableExtractor)(nil)
 
 func (e *TestableExtractor) Frequency() time.Duration {
 	return e.FrequencyDuration
 }
 
-func (e *TestableExtractor) NextEdge() service.Edge {
+func (e *TestableExtractor) NextEdge() Edge {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	edge := e.Edges[e.edgePointer]
@@ -37,7 +35,7 @@ func (e *TestableExtractor) HasNextEdge() bool {
 	return e.edgePointer < len(e.Edges)
 }
 
-func (e *TestableExtractor) NextVertex() service.Vertex {
+func (e *TestableExtractor) NextVertex() Vertex {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	vertex := e.Vertices[e.vertexPointer]

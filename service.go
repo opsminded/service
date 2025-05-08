@@ -23,6 +23,7 @@ type Vertex struct {
 type SubGraph struct {
 	Title      string
 	Principal  Vertex
+	All        bool
 	Highlights []Vertex
 	Edges      []Edge
 	Vertices   []Vertex
@@ -111,6 +112,39 @@ func (s *Service) Summary() Summary {
 	}
 
 	return sum
+}
+
+func (s *Service) GetVertexDependencies(label string, all bool) SubGraph {
+
+	res := s.graph.GetVertexDependencies(label, all)
+
+	sub := SubGraph{
+		Title: "Vizinhos de " + label,
+		All:   res.All,
+		Principal: Vertex{
+			Label: res.Principal.Label(),
+			Class: s.graph.GetVertexClass(res.Principal),
+		},
+		Edges:    []Edge{},
+		Vertices: []Vertex{},
+	}
+
+	for _, v := range res.Vertices {
+		sub.Vertices = append(sub.Vertices, Vertex{
+			Label: v.Label(),
+			Class: s.graph.GetVertexClass(v),
+		})
+	}
+
+	for _, e := range res.Edges {
+		sub.Edges = append(sub.Edges, Edge{
+			Label:       e.Label(),
+			Class:       s.graph.GetEdgeClass(e),
+			Source:      s.graph.EdgeSourceLabel(e),
+			Destination: s.graph.EdgeDestinationLabel(e),
+		})
+	}
+	return sub
 }
 
 func (s *Service) Neighbors(label string) SubGraph {

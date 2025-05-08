@@ -141,8 +141,10 @@ func (s *Service) Neighbors(label string) SubGraph {
 
 	for _, e := range rs.Edges {
 		sub.Edges = append(sub.Edges, Edge{
-			Label: e.Label(),
-			Class: s.graph.GetEdgeClass(e),
+			Label:       e.Label(),
+			Class:       s.graph.GetEdgeClass(e),
+			Source:      s.graph.EdgeSourceLabel(e),
+			Destination: s.graph.EdgeDestinationLabel(e),
 		})
 	}
 

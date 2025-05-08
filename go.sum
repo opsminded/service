@@ -1,2 +1,4 @@
 github.com/opsminded/graphlib v0.0.0-20250508122728-eed510ab6893 h1:JuyLHHVaKb9VJsxR7dJpbNO+IXD7WWGClbJfCPYJNRk=
 github.com/opsminded/graphlib v0.0.0-20250508122728-eed510ab6893/go.mod h1:Sg4YKqOICSBMW/6ksmt0Q/TiqsTm3lkiYWPYkptpHDo=
+github.com/opsminded/graphlib v0.0.0-20250508132155-09e66949b8dd h1:lcdVCNBJBkS7DK48TiaICtPTAcjqCuUzlsRFkGutnEc=
+github.com/opsminded/graphlib v0.0.0-20250508132155-09e66949b8dd/go.mod h1:Sg4YKqOICSBMW/6ksmt0Q/TiqsTm3lkiYWPYkptpHDo=

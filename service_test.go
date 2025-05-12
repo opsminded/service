@@ -77,7 +77,11 @@ func TestNeighbors(t *testing.T) {
 	s := service.New(ctx, time.Second, []service.Extractor{simpleEx}, nil)
 	time.Sleep(2 * time.Second)
 
-	nei := s.Neighbors("B")
+	nei, err := s.Neighbors("B")
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	if len(nei.SubGraph.Vertices) != 3 {
 		t.Fatal("2 nodes expected")
 	}

@@ -127,8 +127,9 @@ func (s *Service) SetVertexHealth(label string, health bool) {
 
 func (s *Service) Summary() Summary {
 	sum := Summary{
-		TotalVertex: s.graph.VertexLen(),
-		TotalEdges:  s.graph.EdgeLen(),
+		TotalVertex:    s.graph.VertexLen(),
+		TotalEdges:     s.graph.EdgeLen(),
+		UnhealthVertex: s.graph.UnhealthyNodes(),
 	}
 	return sum
 }

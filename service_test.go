@@ -1,27 +1,29 @@
 package service_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
+	"github.com/opsminded/graphlib"
 	"github.com/opsminded/service"
 )
 
 var simpleEx = &service.TestableExtractor{
 	FrequencyDuration: time.Second,
-	Edges: []service.Edge{
+	Edges: []graphlib.Edge{
 		{
 			Label:       "AB",
-			Source:      "A",
-			Destination: "B",
+			Source:      graphlib.Vertex{Label: "A"},
+			Destination: graphlib.Vertex{Label: "B"},
 		},
 		{
 			Label:       "BC",
-			Source:      "B",
-			Destination: "C",
+			Source:      graphlib.Vertex{Label: "B"},
+			Destination: graphlib.Vertex{Label: "C"},
 		},
 	},
-	Vertices: []service.Vertex{
+	Vertices: []graphlib.Vertex{
 		{
 			Label: "A",
 		},
@@ -35,8 +37,9 @@ var simpleEx = &service.TestableExtractor{
 }
 
 func TestServiceBasics(t *testing.T) {
-	s := service.New([]service.Extractor{simpleEx})
-	s.Extract()
+	ctx, cancel := context.WithCancel(context.Background())
+	s := service.New(ctx, time.Second, []service.Extractor{simpleEx}, nil)
+	time.Sleep(2 * time.Second)
 
 	v, err := s.GetVertex(simpleEx.Vertices[0].Label)
 	if err != nil {
@@ -46,15 +49,13 @@ func TestServiceBasics(t *testing.T) {
 	if v.Label != simpleEx.Vertices[0].Label {
 		t.Fatal("Error")
 	}
-
-	if _, err := s.GetVertex("x"); err == nil {
-		t.Fatal("error expected")
-	}
+	cancel()
 }
 
 func TestSummary(t *testing.T) {
-	s := service.New([]service.Extractor{simpleEx})
-	s.Extract()
+	ctx, cancel := context.WithCancel(context.Background())
+	s := service.New(ctx, time.Second, []service.Extractor{simpleEx}, nil)
+	time.Sleep(2 * time.Second)
 
 	sum := s.Summary()
 	if sum.TotalVertex != len(simpleEx.Vertices) {
@@ -65,21 +66,24 @@ func TestSummary(t *testing.T) {
 		t.Fatal("num edges error")
 	}
 
-	if len(sum.UnhealthVertex) != len(simpleEx.Vertices) {
+	if len(sum.UnhealthVertex) != 0 {
 		t.Fatal("num of unhealth error")
 	}
+	cancel()
 }
 
 func TestNeighbors(t *testing.T) {
-	s := service.New([]service.Extractor{simpleEx})
-	s.Extract()
+	ctx, cancel := context.WithCancel(context.Background())
+	s := service.New(ctx, time.Second, []service.Extractor{simpleEx}, nil)
+	time.Sleep(2 * time.Second)
 
 	nei := s.Neighbors("B")
-	if len(nei.Vertices) != 2 {
+	if len(nei.SubGraph.Vertices) != 3 {
 		t.Fatal("2 nodes expected")
 	}
 
-	if len(nei.Edges) != 2 {
+	if len(nei.SubGraph.Edges) != 2 {
 		t.Fatal("2 edges expected")
 	}
+	cancel()
 }

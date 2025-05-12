@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"log"
 	"time"
 
@@ -10,14 +9,12 @@ import (
 
 type Edge struct {
 	Label       string
-	Class       string
 	Source      string
 	Destination string
 }
 
 type Vertex struct {
 	Label string
-	Class string
 }
 
 type SubGraph struct {
@@ -66,34 +63,22 @@ func (s *Service) Extract() {
 		for ex.HasNextVertex() {
 			log.Println("next vertex")
 			v := ex.NextVertex()
-			if _, err := s.graph.NewVertex(v.Label, v.Class); err != nil {
-				panic(err)
-			}
+			s.graph.NewVertex(v.Label)
 		}
 
 		for ex.HasNextEdge() {
 			log.Println("next edge")
 			e := ex.NextEdge()
-			v1 := s.graph.GetVertexByLabel(e.Source)
-			v2 := s.graph.GetVertexByLabel(e.Destination)
-			if _, err := s.graph.NewEdge(e.Label, e.Class, v1, v2); err != nil {
-				panic(err)
-			}
+			s.graph.NewEdge(e.Label, e.Source, e.Destination)
 		}
 	}
 }
 
 func (s *Service) GetVertex(label string) (Vertex, error) {
 	v := s.graph.GetVertexByLabel(label)
-	if v == nil {
-		return Vertex{}, errors.New("vertex not found")
-	}
-
 	r := Vertex{
-		Label: v.Label(),
-		Class: s.graph.GetVertexClass(v),
+		Label: v.Label,
 	}
-
 	return r, nil
 }
 
@@ -102,60 +87,44 @@ func (s *Service) Summary() Summary {
 		TotalVertex: s.graph.VertexLen(),
 		TotalEdges:  s.graph.EdgeLen(),
 	}
-
-	list := s.graph.UnhealthVertices()
-	for _, v := range list {
-		sum.UnhealthVertex = append(sum.UnhealthVertex, Vertex{
-			Label: v.Label(),
-			Class: s.graph.GetVertexClass(v),
-		})
-	}
-
 	return sum
 }
 
 func (s *Service) GetVertexDependencies(label string, all bool) SubGraph {
-
 	res := s.graph.GetVertexDependencies(label, all)
-
 	sub := SubGraph{
 		Title: "Vizinhos de " + label,
-		All:   res.All,
+		All:   all,
 		Principal: Vertex{
-			Label: res.Principal.Label(),
-			Class: s.graph.GetVertexClass(res.Principal),
+			Label: label,
 		},
 		Edges:    []Edge{},
 		Vertices: []Vertex{},
 	}
-
 	for _, v := range res.Vertices {
 		sub.Vertices = append(sub.Vertices, Vertex{
-			Label: v.Label(),
-			Class: s.graph.GetVertexClass(v),
+			Label: v.Label,
 		})
 	}
 
 	for _, e := range res.Edges {
 		sub.Edges = append(sub.Edges, Edge{
-			Label:       e.Label(),
-			Class:       s.graph.GetEdgeClass(e),
-			Source:      s.graph.EdgeSourceLabel(e),
-			Destination: s.graph.EdgeDestinationLabel(e),
+			Label:       e.Label,
+			Source:      e.Source.Label,
+			Destination: e.Destination.Label,
 		})
 	}
 	return sub
 }
 
-func (s *Service) GetVertexDependants(label string, all bool) SubGraph {
-	res := s.graph.GetVertexDependants(label, all)
+func (s *Service) GetVertexDependents(label string, all bool) SubGraph {
+	res := s.graph.GetVertexDependents(label, all)
 
 	sub := SubGraph{
 		Title: "Dependencias de " + label,
-		All:   res.All,
+		All:   all,
 		Principal: Vertex{
-			Label: res.Principal.Label(),
-			Class: s.graph.GetVertexClass(res.Principal),
+			Label: label,
 		},
 		Edges:    []Edge{},
 		Vertices: []Vertex{},
@@ -163,17 +132,15 @@ func (s *Service) GetVertexDependants(label string, all bool) SubGraph {
 
 	for _, v := range res.Vertices {
 		sub.Vertices = append(sub.Vertices, Vertex{
-			Label: v.Label(),
-			Class: s.graph.GetVertexClass(v),
+			Label: v.Label,
 		})
 	}
 
 	for _, e := range res.Edges {
 		sub.Edges = append(sub.Edges, Edge{
-			Label:       e.Label(),
-			Class:       s.graph.GetEdgeClass(e),
-			Source:      s.graph.EdgeSourceLabel(e),
-			Destination: s.graph.EdgeDestinationLabel(e),
+			Label:       e.Label,
+			Source:      e.Source.Label,
+			Destination: e.Destination.Label,
 		})
 	}
 	return sub
@@ -182,35 +149,29 @@ func (s *Service) GetVertexDependants(label string, all bool) SubGraph {
 func (s *Service) Neighbors(label string) SubGraph {
 
 	principal := s.graph.GetVertexByLabel(label)
-	if principal == nil {
-		panic("vertex not found")
-	}
 
 	sub := SubGraph{
 		Title: "Vizinhos de " + label,
 		Principal: Vertex{
-			Label: principal.Label(),
-			Class: s.graph.GetVertexClass(principal),
+			Label: principal.Label,
 		},
 		Edges:    []Edge{},
 		Vertices: []Vertex{},
 	}
 
-	rs := s.graph.Neighbors(principal)
+	rs := s.graph.Neighbors(label)
 
 	for _, v := range rs.Vertices {
 		sub.Vertices = append(sub.Vertices, Vertex{
-			Label: v.Label(),
-			Class: s.graph.GetVertexClass(v),
+			Label: v.Label,
 		})
 	}
 
 	for _, e := range rs.Edges {
 		sub.Edges = append(sub.Edges, Edge{
-			Label:       e.Label(),
-			Class:       s.graph.GetEdgeClass(e),
-			Source:      s.graph.EdgeSourceLabel(e),
-			Destination: s.graph.EdgeDestinationLabel(e),
+			Label:       e.Label,
+			Source:      e.Source.Label,
+			Destination: e.Destination.Label,
 		})
 	}
 
@@ -223,8 +184,7 @@ func (s *Service) Path(label, destination string) SubGraph {
 	sub := SubGraph{
 		Title: "Caminho de " + label + " para " + destination,
 		Principal: Vertex{
-			Label: res.Principal.Label(),
-			Class: s.graph.GetVertexClass(res.Principal),
+			Label: label,
 		},
 		Edges:    []Edge{},
 		Vertices: []Vertex{},
@@ -232,16 +192,14 @@ func (s *Service) Path(label, destination string) SubGraph {
 
 	for _, v := range res.Vertices {
 		sub.Vertices = append(sub.Vertices, Vertex{
-			Label: v.Label(),
-			Class: s.graph.GetVertexClass(v),
+			Label: v.Label,
 		})
 	}
 	for _, e := range res.Edges {
 		sub.Edges = append(sub.Edges, Edge{
-			Label:       e.Label(),
-			Class:       s.graph.GetEdgeClass(e),
-			Source:      s.graph.EdgeSourceLabel(e),
-			Destination: s.graph.EdgeDestinationLabel(e),
+			Label:       e.Label,
+			Source:      e.Source.Label,
+			Destination: e.Destination.Label,
 		})
 	}
 	return sub

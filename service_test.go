@@ -12,13 +12,11 @@ var simpleEx = &service.TestableExtractor{
 	Edges: []service.Edge{
 		{
 			Label:       "AB",
-			Class:       "DEFAULT",
 			Source:      "A",
 			Destination: "B",
 		},
 		{
 			Label:       "BC",
-			Class:       "DEFAULT",
 			Source:      "B",
 			Destination: "C",
 		},
@@ -26,15 +24,12 @@ var simpleEx = &service.TestableExtractor{
 	Vertices: []service.Vertex{
 		{
 			Label: "A",
-			Class: "DEFAULT",
 		},
 		{
 			Label: "B",
-			Class: "DEFAULT",
 		},
 		{
 			Label: "C",
-			Class: "DEFAULT",
 		},
 	},
 }
@@ -48,7 +43,7 @@ func TestServiceBasics(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if v.Label != simpleEx.Vertices[0].Label || v.Class != simpleEx.Vertices[0].Class {
+	if v.Label != simpleEx.Vertices[0].Label {
 		t.Fatal("Error")
 	}
 

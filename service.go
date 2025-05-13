@@ -26,9 +26,9 @@ type QueryResult struct {
 }
 
 type Summary struct {
-	TotalEdges       int
-	TotalVertices    int
-	UnhealthVertices []graphlib.Vertex
+	TotalEdges        int
+	TotalVertices     int
+	UnhealthyVertices []graphlib.Vertex
 }
 
 type Extractor interface {
@@ -127,9 +127,9 @@ func (s *Service) SetVertexHealth(label string, health bool) {
 
 func (s *Service) Summary() Summary {
 	sum := Summary{
-		TotalEdges:       s.graph.EdgeLen(),
-		TotalVertices:    s.graph.VertexLen(),
-		UnhealthVertices: s.graph.UnhealthyVertices(),
+		TotalEdges:        s.graph.EdgeLen(),
+		TotalVertices:     s.graph.VertexLen(),
+		UnhealthyVertices: s.graph.UnhealthyVertices(),
 	}
 	return sum
 }

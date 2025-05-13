@@ -66,7 +66,7 @@ func TestSummary(t *testing.T) {
 		t.Fatal("num edges error")
 	}
 
-	if len(sum.UnhealthVertices) != 0 {
+	if len(sum.UnhealthyVertices) != 0 {
 		t.Fatal("num of unhealth error")
 	}
 	cancel()

@@ -14,8 +14,8 @@ var simpleEx = &service.TestableExtractor{
 	BaseEdges: []graphlib.Edge{
 		{
 			Label:       "AB",
-			Source:      graphlib.Vertex{Label: "A"},
-			Destination: graphlib.Vertex{Label: "B"},
+			Source:      graphlib.Vertex{Label: "A", Healthy: true},
+			Destination: graphlib.Vertex{Label: "B", Healthy: true},
 		},
 		{
 			Label:       "BC",
@@ -25,13 +25,16 @@ var simpleEx = &service.TestableExtractor{
 	},
 	BaseVertices: []graphlib.Vertex{
 		{
-			Label: "A",
+			Label:   "A",
+			Healthy: true,
 		},
 		{
-			Label: "B",
+			Label:   "B",
+			Healthy: true,
 		},
 		{
-			Label: "C",
+			Label:   "C",
+			Healthy: true,
 		},
 	},
 }
@@ -67,7 +70,7 @@ func TestSummary(t *testing.T) {
 	}
 
 	if len(sum.UnhealthyVertices) != 0 {
-		t.Fatal("num of unhealth error")
+		t.Fatal("num of unhealth error", len(sum.UnhealthyVertices))
 	}
 	cancel()
 }

@@ -10,8 +10,8 @@ import (
 type TestableExtractor struct {
 	FrequencyDuration time.Duration
 
-	Edges    []graphlib.Edge
-	Vertices []graphlib.Vertex
+	BaseEdges    []graphlib.Edge
+	BaseVertices []graphlib.Vertex
 
 	edgePointer   int
 	vertexPointer int
@@ -28,25 +28,25 @@ func (e *TestableExtractor) Frequency() time.Duration {
 func (e *TestableExtractor) NextEdge() graphlib.Edge {
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	edge := e.Edges[e.edgePointer]
+	edge := e.BaseEdges[e.edgePointer]
 	e.edgePointer++
 	return edge
 }
 
 func (e *TestableExtractor) HasNextEdge() bool {
-	return e.edgePointer < len(e.Edges)
+	return e.edgePointer < len(e.BaseEdges)
 }
 
 func (e *TestableExtractor) NextVertex() graphlib.Vertex {
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	vertex := e.Vertices[e.vertexPointer]
+	vertex := e.BaseVertices[e.vertexPointer]
 	e.vertexPointer++
 	return vertex
 }
 
 func (e *TestableExtractor) HasNextVertex() bool {
-	return e.vertexPointer < len(e.Vertices)
+	return e.vertexPointer < len(e.BaseVertices)
 }
 
 func (e *TestableExtractor) Reset() {

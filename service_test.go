@@ -11,7 +11,7 @@ import (
 
 var simpleEx = &service.TestableExtractor{
 	FrequencyDuration: time.Second,
-	Edges: []graphlib.Edge{
+	BaseEdges: []graphlib.Edge{
 		{
 			Label:       "AB",
 			Source:      graphlib.Vertex{Label: "A"},
@@ -19,11 +19,11 @@ var simpleEx = &service.TestableExtractor{
 		},
 		{
 			Label:       "BC",
-			Source:      graphlib.Vertex{Label: "B"},
-			Destination: graphlib.Vertex{Label: "C"},
+			Source:      graphlib.Vertex{Label: "B", Healthy: true},
+			Destination: graphlib.Vertex{Label: "C", Healthy: true},
 		},
 	},
-	Vertices: []graphlib.Vertex{
+	BaseVertices: []graphlib.Vertex{
 		{
 			Label: "A",
 		},
@@ -41,12 +41,12 @@ func TestServiceBasics(t *testing.T) {
 	s := service.New(ctx, time.Second, []service.Extractor{simpleEx}, nil)
 	time.Sleep(2 * time.Second)
 
-	v, err := s.GetVertex(simpleEx.Vertices[0].Label)
+	v, err := s.GetVertex(simpleEx.BaseVertices[0].Label)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if v.Label != simpleEx.Vertices[0].Label {
+	if v.Label != simpleEx.BaseVertices[0].Label {
 		t.Fatal("Error")
 	}
 	cancel()
@@ -58,11 +58,11 @@ func TestSummary(t *testing.T) {
 	time.Sleep(2 * time.Second)
 
 	sum := s.Summary()
-	if sum.TotalVertices != len(simpleEx.Vertices) {
+	if sum.TotalVertices != len(simpleEx.BaseVertices) {
 		t.Fatal("num vertices error")
 	}
 
-	if sum.TotalEdges != len(simpleEx.Edges) {
+	if sum.TotalEdges != len(simpleEx.BaseEdges) {
 		t.Fatal("num edges error")
 	}
 

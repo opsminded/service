@@ -58,7 +58,7 @@ func TestSummary(t *testing.T) {
 	time.Sleep(2 * time.Second)
 
 	sum := s.Summary()
-	if sum.TotalVertex != len(simpleEx.Vertices) {
+	if sum.TotalVertices != len(simpleEx.Vertices) {
 		t.Fatal("num vertices error")
 	}
 
@@ -66,7 +66,7 @@ func TestSummary(t *testing.T) {
 		t.Fatal("num edges error")
 	}
 
-	if len(sum.UnhealthVertex) != 0 {
+	if len(sum.UnhealthVertices) != 0 {
 		t.Fatal("num of unhealth error")
 	}
 	cancel()

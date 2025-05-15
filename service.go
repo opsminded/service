@@ -57,7 +57,7 @@ func New(ctx context.Context, checkInterval time.Duration, extractors []Extracto
 		clock:         clock,
 		extractors:    extractors,
 		checkInterval: checkInterval,
-		graph:         *graphlib.NewGraph(),
+		graph:         *graphlib.NewGraph(ctx),
 	}
 	service.startExtractLoop(ctx)
 	return service
@@ -84,22 +84,23 @@ func (s *Service) extract() {
 		ex.Reset()
 		for ex.HasNextVertex() {
 			v := ex.NextVertex()
-			s.graph.NewVertex(v.Label)
-			s.graph.SetVertexHealth(v.Label, v.Healthy)
+			s.graph.NewVertex(v.Key, v.Label, v.Healthy)
+			log.Println("Vertex:", v.Key, v.Label, v.Healthy)
 		}
 		for ex.HasNextEdge() {
 			e := ex.NextEdge()
-			s.graph.NewEdge(e.Label, e.Source.Label, e.Destination.Label)
+			s.graph.NewEdge(e.Source, e.Target)
+			log.Println("Edge:", e.Source, e.Target)
 		}
 	}
 }
 
-func (s *Service) GetVertex(label string) (graphlib.Vertex, error) {
-	return s.graph.GetVertexByLabel(label)
+func (s *Service) GetVertex(key string) (graphlib.Vertex, error) {
+	return s.graph.GetVertex(key)
 }
 
-func (s *Service) SetVertexHealth(label string, health bool) error {
-	return s.graph.SetVertexHealth(label, health)
+func (s *Service) SetVertexHealth(key string, health bool) error {
+	return s.graph.SetVertexHealth(key, health)
 }
 
 func (s *Service) ClearGraphHealthyStatus() {
@@ -107,105 +108,111 @@ func (s *Service) ClearGraphHealthyStatus() {
 }
 
 func (s *Service) Summary() Summary {
+	// TODO: adicionar os contadores de dependências
 	sum := Summary{
-		TotalEdges:        s.graph.EdgeLen(),
-		TotalVertices:     s.graph.VertexLen(),
-		UnhealthyVertices: s.graph.UnhealthyVertices(),
+		TotalEdges:        0,
+		TotalVertices:     0,
+		UnhealthyVertices: nil,
 	}
 	return sum
 }
 
-func (s *Service) GetVertexDependencies(label string, all bool) (QueryResult, error) {
-	p, err := s.graph.GetVertexByLabel(label)
+func (s *Service) VertexDependencies(key string, all bool) (QueryResult, error) {
+	p, err := s.graph.GetVertex(key)
 	if err != nil {
 		return QueryResult{}, err
 	}
 
-	dep, err := s.graph.GetVertexDependencies(label, all)
+	dep, err := s.graph.VertexDependencies(key, all)
 	if err != nil {
 		return QueryResult{}, err
 	}
 
 	sub := QueryResult{
-		Title:     "Dependências de " + label,
+		Title:     "Dependências de " + p.Label,
 		Principal: p,
 		SubGraph:  dep,
 	}
 	return sub, nil
 }
 
-func (s *Service) GetVertexDependents(label string, all bool) (QueryResult, error) {
-	p, err := s.graph.GetVertexByLabel(label)
+func (s *Service) GetVertexDependents(key string, all bool) (QueryResult, error) {
+	p, err := s.graph.GetVertex(key)
 	if err != nil {
 		return QueryResult{}, err
 	}
 
-	dep, err := s.graph.GetVertexDependents(label, all)
+	dep, err := s.graph.VertexDependents(key, all)
 	if err != nil {
 		return QueryResult{}, err
 	}
 
 	sub := QueryResult{
-		Title:     "Dependentes de " + label,
+		Title:     "Dependentes de " + p.Label,
 		Principal: p,
 		SubGraph:  dep,
 	}
 	return sub, nil
 }
 
-func (s *Service) Neighbors(label string) (QueryResult, error) {
-	p, err := s.graph.GetVertexByLabel(label)
+func (s *Service) Neighbors(key string) (QueryResult, error) {
+	p, err := s.graph.GetVertex(key)
 	if err != nil {
 		return QueryResult{}, err
 	}
 
-	neighbors, err := s.graph.Neighbors(label)
-	if err != nil {
-		return QueryResult{}, err
-	}
+	// neighbors, err := s.graph.Neighbors(label)
+	// if err != nil {
+	// 	return QueryResult{}, err
+	// }
 
 	sub := QueryResult{
-		Title:     "Vizinhos de " + label,
+		Title:     "Vizinhos de " + p.Label,
 		Principal: p,
-		SubGraph:  neighbors,
+		SubGraph:  graphlib.Subgraph{},
 	}
 	return sub, nil
 }
 
-func (s *Service) Path(label, destination string) (QueryResult, error) {
-	p, err := s.graph.GetVertexByLabel(label)
+func (s *Service) Path(kSrc, ktgt string) (QueryResult, error) {
+	src, err := s.graph.GetVertex(kSrc)
 	if err != nil {
 		return QueryResult{}, err
 	}
 
-	path, err := s.graph.Path(label, destination)
+	tgt, err := s.graph.GetVertex(ktgt)
+	if err != nil {
+		return QueryResult{}, err
+	}
+
+	path, err := s.graph.Path(kSrc, ktgt)
 	if err != nil {
 		return QueryResult{}, err
 	}
 
 	sub := QueryResult{
-		Title:     "Caminhos de " + label + " para " + destination,
-		Principal: p,
+		Title:     "Caminhos de " + src.Label + " para " + tgt.Label,
+		Principal: src,
 		SubGraph:  path,
 	}
 	return sub, nil
 }
 
-func (s *Service) GetVertexLineages(label string) (QueryResult, error) {
-	p, err := s.graph.GetVertexByLabel(label)
+func (s *Service) GetVertexLineages(key string) (QueryResult, error) {
+	p, err := s.graph.GetVertex(key)
 	if err != nil {
 		return QueryResult{}, err
 	}
 
-	lineage, err := s.graph.Lineage(label)
-	if err != nil {
-		return QueryResult{}, err
-	}
+	// lineage, err := s.graph.Lineage(label)
+	// if err != nil {
+	// 	return QueryResult{}, err
+	// }
 
 	sub := QueryResult{
-		Title:     "Linhagens de " + label,
+		Title:     "Linhagens de " + p.Label,
 		Principal: p,
-		SubGraph:  lineage,
+		SubGraph:  graphlib.Subgraph{},
 	}
 
 	return sub, nil

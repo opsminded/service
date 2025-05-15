@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/opsminded/graphlib"
+	"github.com/opsminded/graphlib/v2"
 )
 
 type QueryResult struct {
@@ -34,20 +34,23 @@ type Extractor interface {
 
 type Service struct {
 	extractors []Extractor
-	graph      graphlib.Graph
+	graph      *graphlib.Graph
 }
 
-func New(extractors []Extractor) *Service {
+func New(graph *graphlib.Graph, extractors []Extractor) *Service {
 	service := &Service{
 		extractors: extractors,
-		graph:      *graphlib.NewGraph(),
+		graph:      graph,
 	}
-	service.extract()
 	return service
 }
 
 func (s *Service) Start(ctx context.Context) {
-	s.startExtractLoop(ctx)
+	s.graph.StartHealthCheckLoop(ctx, time.Second*5)
+
+	// TODO
+	//s.startExtractLoop(ctx)
+	s.extract()
 }
 
 func (s *Service) startExtractLoop(ctx context.Context) {
@@ -83,18 +86,22 @@ func (s *Service) extract() {
 }
 
 func (s *Service) GetVertex(key string) (graphlib.Vertex, error) {
+	log.Println("service.GetVertex", key)
 	return s.graph.GetVertex(key)
 }
 
 func (s *Service) SetVertexHealth(key string, health bool) error {
+	log.Println("service.SetVertexHealth", key, health)
 	return s.graph.SetVertexHealth(key, health)
 }
 
 func (s *Service) ClearGraphHealthyStatus() {
+	log.Println("service.ClearGraphHealthyStatus")
 	s.graph.ClearGraphHealthyStatus()
 }
 
 func (s *Service) Summary() Summary {
+	log.Println("service.Summary")
 	stats := s.graph.GraphStats()
 
 	sum := Summary{
@@ -106,6 +113,7 @@ func (s *Service) Summary() Summary {
 }
 
 func (s *Service) VertexDependencies(key string, all bool) (QueryResult, error) {
+	log.Println("service.VertexDependencies", key)
 	p, err := s.graph.GetVertex(key)
 	if err != nil {
 		return QueryResult{}, err
@@ -125,6 +133,7 @@ func (s *Service) VertexDependencies(key string, all bool) (QueryResult, error) 
 }
 
 func (s *Service) GetVertexDependents(key string, all bool) (QueryResult, error) {
+	log.Println("service.GetVertexDependents", key)
 	p, err := s.graph.GetVertex(key)
 	if err != nil {
 		return QueryResult{}, err
@@ -144,25 +153,28 @@ func (s *Service) GetVertexDependents(key string, all bool) (QueryResult, error)
 }
 
 func (s *Service) Neighbors(key string) (QueryResult, error) {
+	log.Println("service.Neighbors", key)
 	p, err := s.graph.GetVertex(key)
 	if err != nil {
 		return QueryResult{}, err
 	}
 
-	// neighbors, err := s.graph.Neighbors(label)
-	// if err != nil {
-	// 	return QueryResult{}, err
-	// }
+	neighbors, err := s.graph.VertexNeighbors(key)
+	if err != nil {
+		return QueryResult{}, err
+	}
 
 	sub := QueryResult{
 		Title:     "Vizinhos de " + p.Label,
 		Principal: p,
-		SubGraph:  graphlib.Subgraph{},
+		SubGraph:  neighbors,
 	}
 	return sub, nil
 }
 
 func (s *Service) Path(kSrc, ktgt string) (QueryResult, error) {
+	log.Println("service.Path", kSrc, ktgt)
+
 	src, err := s.graph.GetVertex(kSrc)
 	if err != nil {
 		return QueryResult{}, err

@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/opsminded/graphlib"
+	"github.com/opsminded/graphlib/v2"
 	"github.com/opsminded/service"
 )
 
@@ -43,7 +43,8 @@ var simpleEx = &service.TestableExtractor{
 }
 
 func TestServiceBasics(t *testing.T) {
-	s := service.New([]service.Extractor{simpleEx})
+	graph := graphlib.NewGraph()
+	s := service.New(graph, []service.Extractor{simpleEx})
 
 	v, err := s.GetVertex(simpleEx.BaseVertices[0].Label)
 	if err != nil {

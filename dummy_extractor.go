@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/opsminded/graphlib"
+	"github.com/opsminded/graphlib/v2"
 )
 
 type TestableExtractor struct {

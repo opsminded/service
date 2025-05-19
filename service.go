@@ -81,13 +81,13 @@ func (s *Service) SetVertexHealth(key string, health bool) error {
 
 func (s *Service) ClearGraphHealthyStatus() {
 	slog.Debug("service.ClearGraphHealthyStatus")
-	s.graph.ClearGraphHealthyStatus()
+	s.graph.ClearHealthyStatus()
 }
 
 func (s *Service) Summary() Summary {
 	slog.Debug("service.Summary")
 
-	stats := s.graph.GraphStats()
+	stats := s.graph.Stats()
 
 	sum := Summary{
 		TotalEdges:    stats.TotalEdges,
